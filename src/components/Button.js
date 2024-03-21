@@ -1,15 +1,8 @@
 import { Text, StyleSheet, TouchableOpacity, TouchableOpacityProps, Image } from 'react-native'
 
 
-interface ButtonProps extends TouchableOpacityProps {
-    title: string;
-    ico: object;
-    width:Number;
-    height:Number;
 
-}
-
-export default function Button({ title, ico, width, height,  ...rest }: ButtonProps) {
+export default function Button({ title, ico, width, height,  ...rest }) {
     return (
         <TouchableOpacity {...rest} style={styles.container}>
             <Image source={ico} style={{ width: width , height: height}} />
@@ -23,7 +16,7 @@ export default function Button({ title, ico, width, height,  ...rest }: ButtonPr
 
 const styles = StyleSheet.create({
     container: {
-        width: '40%',
+        width: '80%',
         backgroundColor: 'white',
         margin: 10,
         padding: 20,

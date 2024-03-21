@@ -10,9 +10,9 @@ export default function History(){
     const [data, setData] = useState([{ x: 0, y: 0 }]);
 
     const url = 'https://www.foxesscloud.com';
-    const token = '1dfb3b6d-5a42-4160-a3e5-883f13250e21';
+    const token = '';
     const timestamp = new Date().getTime();
-    const sn = 'J02F6020324A137';
+    const sn = '';
     const parametersGeneration = '/op/v0/device/generation';
     const parametershistory = '/op/v0/device/report/query';
     const parameterReal = '/op/v0/device/real/query';
