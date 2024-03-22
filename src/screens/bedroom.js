@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet,StatusBar, Image} from 'react-native';
 import Button from '../components/Button';
 import Header from '../components/Header';
 import { Entypo } from '@expo/vector-icons';
@@ -9,7 +9,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Animatable from 'react-native-animatable';
 import {Slider} from '@miblanchard/react-native-slider';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-
 
 
 var dimer0 = false
@@ -165,6 +164,7 @@ export default function Bedroom() {
 
     return (
         <Animatable.View style={styles.container}>
+            <StatusBar backgroundColor={'rgb(47,93,180)'} barStyle="auto-content" />
             <Header title={'Quarto'} status={statusReguest}/>
             <View style={styles.subHeader}>
                 
@@ -219,7 +219,6 @@ const styles = StyleSheet.create({
         width: "100%",
         height: '100%',
         alignItems: 'center',
-        top:wp(5)
     },
     subHeader: {
         width: "100%",

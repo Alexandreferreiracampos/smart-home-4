@@ -1,6 +1,5 @@
 import React,{useEffect, useState} from "react";
-import {View, TouchableOpacity, Text, ScrollView, Modal} from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import {View, TouchableOpacity, Text, ScrollView, StatusBar,} from 'react-native';
 import md5 from "md5";
 import { VictoryLabel, VictoryBar, VictoryChart, VictoryTheme } from "victory-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -118,9 +117,9 @@ export default function History(){
     }
 
     return(
-        <View style={{flex:1, top:wp(5), backgroundColor:'rgb(47,93,180)'}}>
+        <View style={{flex:1, backgroundColor:'rgb(47,93,180)'}}>
             <ModalCalendar status={statusModal} onDayPress={(item)=>filterHistorico(new Date(item.dateString))}/>
-            <StatusBar backgroundColor={'white'} barStyle="light-content" />
+            <StatusBar backgroundColor={'rgb(47,93,180)'} barStyle="light-content" />
             <View style={{padding:20, height:wp(20), flexDirection:'row',backgroundColor:'rgb(47,93,180)', justifyContent:'space-between', alignItems:'center'}}>
                 <Text numberOfLines={1} allowFontScaling={false} style={{fontSize:wp(6),fontWeight:'bold', color: 'white'}}>Rendimento</Text>
                 <TouchableOpacity onPress={()=>setStatusModal(true)}>

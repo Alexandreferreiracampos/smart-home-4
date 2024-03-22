@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet, SafeAreaView, Platform, ScrollView, ToastAndroid, Switch } from "react-native";
-import { StatusBar } from 'expo-status-bar';
+import { View, Text, TouchableOpacity, Image,StatusBar, StyleSheet, SafeAreaView, Platform, ScrollView, ToastAndroid, Switch } from "react-native";
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import md5 from "md5";
 import Gate from '../assets/gate.png';
@@ -327,7 +327,7 @@ export default function Home() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar backgroundColor={'white'} barStyle="dark-content" />
+            <StatusBar backgroundColor={'rgb(47,93,180)'} barStyle="auto-content" />
             <ScrollView showsVerticalScrollIndicator={false} >
 
                 <View style={styles.header}>
@@ -406,14 +406,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
-        marginTop: wp(7),
         backgroundColor: '#f0f0f0'
     },
     header: {
         width: "100%",
-        height: wp(25),
+        height: wp(20),
         position: 'absolute',
-        padding: 25,
+        padding: 15,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
