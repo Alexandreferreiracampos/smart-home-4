@@ -1,10 +1,13 @@
 import React,{useEffect, useState} from "react";
-import {View, TouchableOpacity, Text, ScrollView} from 'react-native';
+import {View, TouchableOpacity, Text, ScrollView, Modal} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import md5 from "md5";
 import { VictoryLabel, VictoryBar, VictoryChart, VictoryTheme } from "victory-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Entypo, FontAwesome,EvilIcons } from "@expo/vector-icons";
+import ModalCalendar from "../components/ModalCalendario";
+
 
 
 export default function History(){
@@ -14,6 +17,7 @@ export default function History(){
     const [datayear, setDatayear] = useState([{ x: 0, y: 0 }]);
     const [value, setValue] = useState({ fan: '', Bedroom: '', livingRoom: '', name: '', escritorio: '', cozinha: '', edicula: '', host: '', auth: '', foxx: '', sn: '' });
     const [awaitToken, setAwaitToken] = useState(false); 
+    const [statusModal, setStatusModal] = useState(false);
 
     const url = 'https://www.foxesscloud.com';
     const token = value.foxx;
@@ -53,13 +57,18 @@ export default function History(){
         };
     }
 
-    const history = async (value, dataString) => {
+    const filterHistorico=(dataString)=>{
+        history('day', dataString)
+        history('month', dataString)
+        history('year', dataString)
+    }
 
+    const history = async (value, dataString) => {
+        setStatusModal(false);
         const date = dataString;
-        const day = date.getDate(); 
+        const day = date.getUTCDate(); 
         const month = date.getMonth() + 1; 
         const year = date.getFullYear(); 
-
         try {
             const response = await fetch(url + parametershistory, {
                 method: 'POST',
@@ -109,14 +118,19 @@ export default function History(){
     }
 
     return(
-        <View>
+        <View style={{flex:1, top:wp(5), backgroundColor:'rgb(47,93,180)'}}>
+            <ModalCalendar status={statusModal} onDayPress={(item)=>filterHistorico(new Date(item.dateString))}/>
             <StatusBar backgroundColor={'white'} barStyle="light-content" />
-            <View style={{top:wp(30), height:100}}>
+            <View style={{padding:20, height:wp(20), flexDirection:'row',backgroundColor:'rgb(47,93,180)', justifyContent:'space-between', alignItems:'center'}}>
+                <Text numberOfLines={1} allowFontScaling={false} style={{fontSize:wp(6),fontWeight:'bold', color: 'white'}}>Rendimento</Text>
+                <TouchableOpacity onPress={()=>setStatusModal(true)}>
+                <FontAwesome name="calendar" size={wp(9)} color="white" />
+                </TouchableOpacity>
             </View>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{position:'relative'}}>
             <View style={{flex:1, backgroundColor:'white', marginBottom:10}}>
                 <View style={{width:'100%', height:'10%', justifyContent:'center', alignItems:'center'}}>
-                <Text numberOfLines={1} allowFontScaling={false} style={{fontWeight:'bold', color:'gray', top:wp(2)}}>Gerado no dia</Text>
+                <Text numberOfLines={1} allowFontScaling={false} style={{fontWeight:'bold', color:'gray', top:wp(2), fontSize:wp(5)}}>Gerado no dia</Text>
                 </View>
                 <View style={{width:'100%', height:'90%'}}>
             <VictoryChart
@@ -130,7 +144,7 @@ export default function History(){
 
                         data={dataday}
                         labels={({ datum }) => datum.y}
-                        style={{ labels: { fill: "black", fontSize: 8 }, dataday: { fill: "#c43a31" } }}
+                        style={{ labels: { fill: "black", fontSize: 8 }, data: { fill: "#c43a31" } }}
                         labelComponent={<VictoryLabel dy={0} />}
 
                     />
@@ -139,7 +153,7 @@ export default function History(){
             </View>
             <View style={{flex:1,backgroundColor:'white',marginBottom:10}}>
                 <View style={{width:'100%', height:'10%', justifyContent:'center', alignItems:'center'}}>
-                <Text numberOfLines={1} allowFontScaling={false} style={{fontWeight:'bold', color:'gray', top:wp(2)}}>Gerado no mês</Text>
+                <Text numberOfLines={1} allowFontScaling={false} style={{fontWeight:'bold', color:'gray', top:wp(2),fontSize:wp(5)}}>Gerado no mês</Text>
                 </View>
                 <View style={{width:'100%', height:'90%'}}>
             <VictoryChart
@@ -153,7 +167,7 @@ export default function History(){
 
                         data={datamonth}
                         labels={({ datum }) => datum.y}
-                        style={{ labels: { fill: "black", fontSize: 8 }, datamonth: { fill: "#c43a31" } }}
+                        style={{ labels: { fill: "black", fontSize: 8 }, data: { fill: "#c43a31" } }}
                         labelComponent={<VictoryLabel dy={0} />}
 
                     />
@@ -162,7 +176,7 @@ export default function History(){
             </View>
             <View style={{flex:1,backgroundColor:'white',marginBottom:10}}>
                 <View style={{width:'100%', height:'10%', justifyContent:'center', alignItems:'center'}}>
-                <Text numberOfLines={1} allowFontScaling={false} style={{fontWeight:'bold', color:'gray', top:wp(2)}}>Gerado no Ano</Text>
+                <Text numberOfLines={1} allowFontScaling={false} style={{fontWeight:'bold', color:'gray', top:wp(2), fontSize:wp(5)}}>Gerado no Ano</Text>
                 </View>
                 <View style={{width:'100%', height:'90%'}}>
             <VictoryChart
@@ -176,7 +190,7 @@ export default function History(){
 
                         data={datayear}
                         labels={({ datum }) => datum.y}
-                        style={{ labels: { fill: "black", fontSize: 8 }, datayear: { fill: "#c43a31" } }}
+                        style={{ labels: { fill: "black", fontSize: 8 }, data: { fill: "#c43a31" } }}
                         labelComponent={<VictoryLabel dy={0} />}
 
                     />
