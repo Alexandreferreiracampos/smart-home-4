@@ -1,10 +1,10 @@
-import { Text, StyleSheet, TouchableOpacity, TouchableOpacityProps, Image } from 'react-native'
+import { Text, StyleSheet, TouchableOpacity, View, Image } from 'react-native'
 
 
 
-export default function Button({ title, ico, width, height,  ...rest }) {
+export default function Button({ title, status, ico, width, height,  ...rest }) {
     return (
-        <TouchableOpacity {...rest} style={styles.container}>
+        <TouchableOpacity {...rest} style={[styles.container, status == 'red'? {opacity:0.7} : {opacity:1}]}>
             <Image source={ico} style={{ width: width , height: height}} />
             <Text numberOfLines={1} allowFontScaling={false}  style={styles.text}>
 

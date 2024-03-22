@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet, SafeAreaView, Platform, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, Image, StyleSheet, SafeAreaView, Platform, ScrollView, ToastAndroid, Switch } from "react-native";
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import md5 from "md5";
@@ -10,12 +10,13 @@ import escritorio from '../assets/escritorio.png';
 import cozinha from '../assets/cozinha.png';
 import Pv from '../assets/icon_inversor.png';
 import churrasco from '../assets/churrasco.png';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { Entypo, MaterialIcons } from "@expo/vector-icons";
+import { Entypo, MaterialIcons,EvilIcons } from "@expo/vector-icons";
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import *as Animatable from 'react-native-animatable';
 import Button from "../components/Button";
+import * as LocalAuthentication from 'expo-local-authentication';
 
 const ios = Platform.OS == 'ios';
 const topMargin = ios ? 'mt-50' : 'mt-80';
@@ -25,28 +26,107 @@ export default function Home() {
     const navigation = useNavigation();
 
     const [valueGeneration, setGeneration] = useState({ "cumulative": 0, "month": 0, "today": 0 })
-    const [devices, setDevices] = useState({ fan: '', Bedroom: '', livingRoom: '', name: '', escritorio: '', cozinha: '', edicula: '', host: '', auth: '', foxx: '' });
+    const [value, setValue] = useState({ fan: '', Bedroom: '', livingRoom: '', name: '', escritorio: '', cozinha: '', edicula: '', host: '', auth: '', foxx: '', sn: '' });
     const [KWNow, setKWNow] = useState([]);
     const [circularProgress, setCircularProgress] = useState(0);
+    const [statusInversor, setStatusInversor] = useState('red');
+    const [statusSala, setStatusSala] = useState('red');
+    const [statusQuarto, setStatusQuarto] = useState('red');
+    const [statusCozinha, setStatusCozinha] = useState('red');
+    const [statusEscritorio, setStatusEscritorio] = useState('red');
+    const [statusReguest, setReguest] = useState('red');
+    const [activeTextLeds, setActiveTextLeds] = useState(false);
+    const [activeTextArandela, setActiveTextArandela] = useState(false);
+    const [activeTextGaragem, setActiveTextGaragem] = useState(false);
+    const [awaitToken, setAwaitToken] = useState(false); 
 
     const url = 'https://www.foxesscloud.com';
-    const token = '';
-    const timestamp = new Date().getTime();
-    const sn = '';
+    const token = value.foxx;
+    const sn = value.sn;
     const parametersGeneration = '/op/v0/device/generation';
     const parametershistory = '/op/v0/device/report/query';
     const parameterReal = '/op/v0/device/real/query';
 
-    useEffect(() => {
-        // KW()
-        /*
-        setInterval(() => {
-            KW();
-        }, 12000);
-        */
-    }, [])
+    useEffect(()=>{
+        loadStorage();
+        
+    },[])
+
+     //executa sempre que voltar pelo metodo goback
+     useFocusEffect(
+        React.useCallback(() => {
+            loadStorage();
+        }, [])
+    );
+
+    useEffect(()=>{
+        status();
+        setAwaitToken(false);    
+    },[value])
+
+    
+    const loadStorage=async()=>{
+        const dataDevices = await AsyncStorage.getItem('@smartHome:device')
+        if(dataDevices != null || ''){
+            const objeto = JSON.parse(dataDevices || '');
+            setValue(objeto);
+        }
+ 
+    }
+
+    const status = async ()=>{
+
+        const dataDevice = [value.livingRoom, value.cozinha, value.Bedroom, value.escritorio];
+        
+        for(let i = 0; dataDevice.length > i; i++){
+            verifiqueStatus(dataDevice[i], i);     
+        }
+        
+    }
+
+    const verifiqueStatus = async(value, i)=>{
+        try {
+            const response = await fetch(`https://${value}`, {
+                method: 'GET',
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
+            if(i == 0){
+                setStatusSala('green');
+            }
+            if(i == 1){
+                setStatusCozinha('green')
+            }
+            if(i == 2){
+                setStatusQuarto('green');
+            }
+            if(i == 3){
+                setStatusEscritorio('green');
+            }
+           
+
+        } catch (error) {
+              console.log(i);
+              if(i == 0){
+                setStatusSala('red');
+            }
+            if(i == 1){
+                setStatusCozinha('red')
+            }
+            if(i == 2){
+                setStatusQuarto('red');
+            }
+            if(i == 3){
+                setStatusEscritorio('red');
+            }
+
+        }
+    }
 
     const headers = async = (param) => {
+        const timestamp = new Date().getTime();
         console.log(1);
         const signature = [param, token, timestamp].join('\\r\\n');
         const signatureMD5 = md5(signature);
@@ -75,11 +155,17 @@ export default function Home() {
             }
 
             const data = await response.json();
-            setGeneration(data.result);
-            console.log(data.result)
+            try {
+                setGeneration(data.result);
+                console.log(data.result)
+            } catch (error) {
+                setStatusInversor('red');
+            }
+            
 
         } catch (error) {
             console.error('There was a problem with the request:', error);
+            setStatusInversor('red');
         }
 
     }
@@ -100,38 +186,154 @@ export default function Home() {
                 throw new Error('Network response was not ok');
             }
             console.log(3);
+            
             const data = await response.json();
+            if(data.errno){
+                ToastAndroid.showWithGravityAndOffset(
+                    data.msg,
+                    ToastAndroid.LONG,
+                    ToastAndroid.CENTER,
+                    25,
+                    50
+                  );
+            }
+            setStatusInversor('green');
             try {
                 const numeroFormatado = Math.round(data.result[0].datas[0].value * 100) / 100;
                 setKWNow(numeroFormatado);
-
+                setStatusInversor('green');
                 setCircularProgress((numeroFormatado / 5.5) * 100);
                 generation();
             } catch (error) {
-                console.log(data)
+                setStatusInversor('red');
             }
 
         } catch (error) {
             console.error('There was a problem with the request:', error);
             console.log(4);
+            setStatusInversor('red');
         }
     }
 
+    if( value.foxx != '' && awaitToken == false){
+        setAwaitToken(true);
+        KW()
+    }
+
+    const command = (valor) => {
+        
+       
+        let url = 'http://' + valor
+        let req = new XMLHttpRequest();
+        req.onreadystatechange = () => {
+            if (req.status == 200 && req.readyState == 4) {
+                setReguest('#39d76c') ;
+            } else {
+                setReguest('red');
+            }
+        }
+
+        req.open('GET', url);
+        req.send();
+
+        switch (valor) {
+            case value.livingRoom + "/rele1":
+                setActiveTextLeds(!activeTextLeds)
+                break;
+            case value.livingRoom + "/?rele4":
+                setActiveTextArandela(!activeTextArandela)
+                break;
+            case value.livingRoom + "?rele3":
+                setActiveTextGaragem(!activeTextGaragem)
+                break;
+
+        }
+
+    }
+
+    const remoteDevice=(value, device, msg)=>{
+
+        let url = value.host + device + '.json?auth='+ value.auth
+        let req = new XMLHttpRequest();
+        req.open('PUT', url)
+        req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        req.send(JSON.stringify(value));
+
+        ToastAndroid.showWithGravityAndOffset(
+            msg,
+            ToastAndroid.LONG,
+            ToastAndroid.CENTER,
+            25,
+            50
+        );
+        
+
+    }
+
+    const biometric = async () => {
+
+
+        const authenticationBiometric = await LocalAuthentication.authenticateAsync({
+            promptMessage: "Portão eletrônico",
+            cancelLabel: "Cancelar",
+            disableDeviceFallback: false,
+        });
+
+        if (authenticationBiometric.success) {
+            openGate()
+        }
+
+    };
+
+    const biometricOnLong = async () => {
+
+
+        const authenticationBiometric = await LocalAuthentication.authenticateAsync({
+            promptMessage: "Acionar Remotamente Portão da Garagem?",
+            cancelLabel: "Cancelar",
+            disableDeviceFallback: false,
+        });
+
+        if (authenticationBiometric.success) {
+            remoteDevice("true", "portao", "Acionado Remotamente")
+        }else{
+            remoteDevice("false", "portao", "Cancelado")
+        }
+
+    };
+
+
+    const openGate = () => {
+
+        command(value.livingRoom + "/relea")
+
+        ToastAndroid.showWithGravityAndOffset(
+            "Acionando Portão",
+            ToastAndroid.LONG,
+            ToastAndroid.CENTER,
+            25,
+            50
+        );
+
+    }
+
+
+
+
     const navigatioScreen = (value) => {
 
-        let object = [,]
-        navigation.navigate(value, object)
+        navigation.navigate(value)
     }
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar backgroundColor={'white'} barStyle="light-content" />
+            <StatusBar backgroundColor={'white'} barStyle="dark-content" />
             <ScrollView showsVerticalScrollIndicator={false} >
 
                 <View style={styles.header}>
-                    <Animatable.Text numberOfLines={1} allowFontScaling={false} animation="slideInLeft" style={styles.title}>Olá {devices.name} Alexandre!</Animatable.Text>
-                    <Animatable.Text numberOfLines={1} allowFontScaling={false} animation="slideInRight" onPress={() => navigatioScreen('History')}>
-                        <MaterialIcons name={'wifi'} size={wp(8)} color={'red'} />
+                    <Animatable.Text numberOfLines={1} allowFontScaling={false} animation="slideInLeft" style={styles.title}>Olá {value.name}!</Animatable.Text>
+                    <Animatable.Text numberOfLines={1} allowFontScaling={false} animation="slideInRight" onPress={() => navigatioScreen('Config')}>
+                        <Entypo  name={'add-to-list'} size={wp(8)} color={'white'} />
                     </Animatable.Text>
                 </View>
 
@@ -172,20 +374,29 @@ export default function Home() {
                     </TouchableOpacity >
                 </View>
 
-                <View style={{width:'100%',flexDirection:'row'}}>
+                <View style={{width:'100%',flexDirection:'row', top:-wp(5)}}>
                     <View style={styles.row}>
-                    <Button title='Sala' ico={BTLivingRoom} width={90} height={90} onPress={() => navigatioScreen('LivingRoom')} onLongPress={() => command(devices.livingRoom+"/?rele6")} />
-                    <Button title='Edícula' ico={churrasco} width={90} height={90} onPress={() => navigatioScreen('PartyArea')} onLongPress={() => command(devices.edicula+"/relee")}/>
-                    <Button title='Escritório' ico={escritorio} width={90} height={90} onPress={() => navigatioScreen('GamerRoom')} onLongPress={() => command(devices.escritorio+"/pc")}/>
+                    <Button title='Sala' status={statusSala} ico={BTLivingRoom} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('LivingRoom')} onLongPress={() => command(value.livingRoom+"/?rele6")} />
+                    <Button title='Edícula' status={statusSala} ico={churrasco} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('PratyArea')} onLongPress={() => command(value.edicula+"/relee")}/>
+                    <Button title='Escritório' status={statusEscritorio} ico={escritorio} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('GamerRoom')} onLongPress={() => command(value.escritorio+"/pc")}/>
                     </View>
                     <View style={styles.row}>
-                    <Button title='Cozinha' ico={cozinha} width={90} height={90} onPress={() => command(devices.cozinha + "/Controle?Rele1=on")}/>
-                    <Button title='Quarto' ico={BTBedroom1} width={90} height={90} onPress={() => navigatioScreen('Bedroom')} onLongPress={() => command(devices.Bedroom+"/rele4")}/>
-                    <Button title='Placa Solar' ico={Pv} width={90} height={90} onPress={() => navigatioScreen('History')}/>
+                    <Button title='Cozinha' status={statusCozinha} ico={cozinha} width={wp(20)} height={wp(20)} onPress={() => command(value.cozinha + "/Controle?Rele1=on")}/>
+                    <Button title='Quarto' status={statusQuarto} ico={BTBedroom1} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('Bedroom')} onLongPress={() => command(value.Bedroom+"/rele4")}/>
+                    <Button title='Placa Solar' status={statusInversor} ico={Pv} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('History')}/>
                     </View>
 
                 </View>
             </ScrollView>
+           
+            <View style={{width:'100%', height:wp(16),backgroundColor:'rgb(47,93,180)', flexDirection:'row',alignItems:'center', padding:wp(1), justifyContent:'space-between'}}>
+                <TouchableOpacity onPress={() => biometric()} onLongPress={()=> biometricOnLong()} style={{ width: wp(22), height: wp(22), top:wp(-2), borderRadius: 75, backgroundColor:'rgb(47,93,180)', justifyContent: 'center',alignItems: 'center' }}>
+                   <Image source={require('../assets/gate.png')} style={{width:'65%', height:'65%'}}/>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => command(value.livingRoom + "?rele3")} onLongPress={()=> remoteDevice("true", "Luzgaragem", "Luz Garagem Acionado Remotamente")}><Text numberOfLines={1} allowFontScaling={false}  style={[styles.titleButton, activeTextGaragem && styles.titleButtonActive]}>Garagem</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => command(value.livingRoom + "/?rele4")} onLongPress={()=> remoteDevice("true", "arandelas", "Arandelas Acionado Remotamente")} ><Text numberOfLines={1} allowFontScaling={false}  style={[styles.titleButton, activeTextArandela && styles.titleButtonActive]}>Arandelas</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => command(value.livingRoom + "/rele1")} onLongPress={()=> remoteDevice("true", "leds", "Led Acionado Remotamente")} ><Text numberOfLines={1} allowFontScaling={false}  style={[styles.titleButton, activeTextLeds && styles.titleButtonActive]}>Leds</Text></TouchableOpacity>
+            </View>
         </SafeAreaView>
     )
 }
@@ -218,10 +429,12 @@ const styles = StyleSheet.create({
     subHeader: {
         width: wp(100),
         height: wp(80),
+        justifyContent: 'center',
+        alignItems:'center'
     },
     backgroundImage: {
         position: 'absolute',
-        width: '100%',
+        width: '140%',
         height: '120%',
     },
     overlayContainer: {
@@ -244,6 +457,7 @@ const styles = StyleSheet.create({
         height: wp(33),
     },
     containerGeneration: {
+        position: 'absolute',
         width: wp(30),
         left: wp(13),
         height: wp(57),
@@ -254,9 +468,34 @@ const styles = StyleSheet.create({
         zIndex: 100
     },
     row: {
-        margin:10,
         flex:1,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    button: {
+        width: "19%",
+        height: "56%",
+        margin: 5,
+        backgroundColor: 'rgb(243,243,243)',
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.22,
+        shadowRadius: 1.22,
+        elevation: 5,
+
+    },
+    titleButton: {
+        color: '#868686',
+        fontWeight: 'bold'
+    },
+    titleButtonActive: {
+        color: '#5994ec',
+        fontWeight: 'bold'
     },
 });

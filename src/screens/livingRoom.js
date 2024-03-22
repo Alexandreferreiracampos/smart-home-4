@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { StyleSheet, Text, View, Image, Modal, TouchableOpacity,ScrollView } from 'react-native';
 import Button from '../components/Button';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import pcgamer from '../assets/pc-gamer.png';
-import lamp from '../assets/lamp.png';
+import led from '../assets/led.png';
+import lustre from '../assets/lustre.png';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 import * as Animatable from 'react-native-animatable';
 
@@ -11,17 +12,15 @@ import Header from '../components/Header';
 
 export default function LivingRoom() {
 
-
-
   const [validateData, setValidateData] = useState(true);
   const [devices, setDevices] = useState({fan:'',Bedroom:'',livingRoom:'', name:'',escritorio:'', edicula:'' });
   const [statusReguest, setReguest] = useState('#39d76c');
-
   
+
     if(validateData == true){
     async function loadStorgeUserName(){
 
-        const dataDevices = await AsyncStorage.getItem('@Device:quarton')
+        const dataDevices = await AsyncStorage.getItem('@smartHome:device')
         const objeto = JSON.parse(dataDevices || '');
         setDevices(objeto)
         
@@ -33,7 +32,7 @@ export default function LivingRoom() {
 
   
 
-    const command = (valor: any) => {
+    const command = (valor) => {
 
         let url = 'http://'+valor
         let req = new XMLHttpRequest();
@@ -53,19 +52,22 @@ export default function LivingRoom() {
 
   return (
     <View style={styles.container}>
-      <Header title='Escritório' status={statusReguest}/>
+      <Header title='Sala' status={statusReguest} />
       <View style={styles.subHeader}>
-        <Image source={require('../assets/pc.jpeg')} style={styles.image}></Image>
+        <Image source={require('../assets/Living-Room.jpg')} style={styles.image}></Image>
       </View>
       <View style={styles.containerButton}>
                 <View style={styles.titleDevices}>
-                    <Text numberOfLines={1} allowFontScaling={false}  style={{ fontSize: 20, fontWeight: 'bold', color: '#868686' }}>Devices</Text>
+                    <Text numberOfLines={1} allowFontScaling={false} style={{ fontSize: 20, fontWeight: 'bold', color: '#868686' }}>Devices</Text>
                 </View>
              
-                <Animatable.View animation="slideInUp" style={{ flexDirection: 'row'}}>
-                    <Button title='Luz' ico={lamp} width={80} height={80} onPress={() => command(devices.escritorio+"/luz")} />
-                    <Button title='pc' ico={pcgamer} width={80} height={80} onPress={() => command(devices.escritorio+"/pc")} />
-                    
+                <Animatable.View animation="slideInUp" style={{ flexDirection: 'row', width:'100%'}}>
+                <View style={styles.row}>
+                    <Button title='Lustre' ico={lustre} width={wp(20)} height={wp(20)} onPress={() => command(devices.livingRoom+"/?rele6")} />
+                </View>
+                <View style={styles.row}>   
+                    <Button title='Sanca' ico={led} width={wp(20)} height={wp(20)} onPress={() => command(devices.livingRoom+"/?rele5")} />
+                </View>
                 </Animatable.View>
                 
                 </View>
@@ -80,7 +82,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: '100%',
     alignItems: 'center',
-
+    top:wp(5)
 },
 subHeader: {
     width: "100%",
@@ -111,6 +113,11 @@ containerButton: {
     alignItems: 'center',
     backgroundColor: 'rgb(243,243,243)'
 
+},
+row: {
+    flex:1,
+    justifyContent: 'center',
+    alignItems: 'center',
 },
 
 })

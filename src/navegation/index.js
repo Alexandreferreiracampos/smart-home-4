@@ -4,6 +4,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Home from '../screens/home';
 import History from '../screens/history';
+import Config from '../screens/config';
+import LivingRom from '../screens/livingRoom';
+import PratyArea from '../screens/partryArea';
+import Bedroom from '../screens/bedroom';
+import GamerRoom from '../screens/gamerRoom';
 
 
 const Stack = createNativeStackNavigator();
@@ -22,6 +27,11 @@ export default function Navigation(){
            >
              <Stack.Screen name="Home" component={Home}/>
              <Stack.Screen name="History" component={History}/>
+             <Stack.Screen name="Config" component={Config}/>
+             <Stack.Screen name="LivingRoom" component={LivingRom}/>
+             <Stack.Screen name="PratyArea" component={PratyArea}/>
+             <Stack.Screen name="Bedroom" component={Bedroom}/>
+             <Stack.Screen name="GamerRoom" component={GamerRoom}/>
 
            </Stack.Navigator>
         </NavigationContainer>

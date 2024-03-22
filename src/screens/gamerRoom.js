@@ -1,47 +1,126 @@
-import React,{useEffect, useState} from "react";
-import {View, TouchableOpacity, Text} from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
+import { StyleSheet, Text, View, Image, Modal, TouchableOpacity,ScrollView } from 'react-native';
+import Button from '../components/Button';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import pcgamer from '../assets/pc-gamer.png';
+import lamp from '../assets/lamp.png';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 
-export default function GamerRoom(){
+import * as Animatable from 'react-native-animatable';
 
-    return(
-        <View>
-            <StatusBar backgroundColor={'white'} barStyle="light-content" />
-            <View style={styles.header}>
-                <Animatable.Text numberOfLines={1} allowFontScaling={false} animation="slideInLeft" style={styles.title}>Olá {devices.name}</Animatable.Text>
-                <Animatable.Text numberOfLines={1} allowFontScaling={false} animation="slideInRight" onPress={() => navigatioScreen('History')}>
-                    <MaterialIcons name={'wifi'} size={wp(8)} color={'red'} />
-                </Animatable.Text>
-            </View>
+import Header from '../components/Header';
 
-            <View style={styles.subHeader}>
-                <Image source={require('../assets/1.jpeg')} className="h-full w-full absolute" style={styles.backgroundImage}/>
-                <TouchableOpacity activeOpacity={0.6} onPress={()=>KW()}  style={styles.overlayContainer}>
-                <Image source={require('../assets/icon_ennergy_bg.png')} style={styles.overlayImage}/>
-                <Text numberOfLines={1} allowFontScaling={false} style={styles.overlayText}>kwh</Text>
-                <Text numberOfLines={1} allowFontScaling={false} style={styles.overlayText}>{KWNow}</Text>
-                </TouchableOpacity >  
-            </View>
-            <View style={{width:'100%', height:wp(17), flexDirection:'row', justifyContent:'space-between',padding:wp(2)}}>
-                <View style={{flex:1,justifyContent:'center', alignItems:'center',padding:wp(1)}}>
-                    <Text numberOfLines={1} allowFontScaling={false} style={{fontSize:wp(4)}}>Hoje</Text>
-                    <Text numberOfLines={1} allowFontScaling={false} style={{fontSize:wp(5)}}>{valueGeneration.today.toFixed(2)}</Text>
-                    <Text numberOfLines={1} allowFontScaling={false} style={{fontSize:wp(3)}}>kwh</Text>
+export default function LivingRoom() {
+
+
+
+  const [validateData, setValidateData] = useState(true);
+  const [devices, setDevices] = useState({fan:'',Bedroom:'',livingRoom:'', name:'',escritorio:'', edicula:'' });
+  const [statusReguest, setReguest] = useState('#39d76c');
+
+  
+    if(validateData == true){
+    async function loadStorgeUserName(){
+
+        const dataDevices = await AsyncStorage.getItem('@Device:quarton')
+        const objeto = JSON.parse(dataDevices || '');
+        setDevices(objeto)
+        
+        setValidateData(false)
+        }
+    loadStorgeUserName()
+
+    }
+
+  
+
+    const command = (valor) => {
+
+        let url = 'http://'+valor
+        let req = new XMLHttpRequest();
+
+        req.onreadystatechange = () => {
+            if (req.status == 200 && req.readyState == 4) {
+                setReguest('#39d76c')
+            } else {
+                setReguest('red')
+            }
+        }
+
+        req.open('GET', url)
+        req.send()
+
+    }
+
+  return (
+    <View style={styles.container}>
+      <Header title='Escritório' status={statusReguest}/>
+      <View style={styles.subHeader}>
+        <Image source={require('../assets/pc.jpeg')} style={styles.image}></Image>
+      </View>
+      <View style={styles.containerButton}>
+                <View style={styles.titleDevices}>
+                    <Text numberOfLines={1} allowFontScaling={false}  style={{ fontSize: 20, fontWeight: 'bold', color: '#868686' }}>Devices</Text>
                 </View>
-                <View style={{flex:1, justifyContent:'center', alignItems:'center',padding:wp(1), borderEndWidth:1, borderLeftWidth:1, borderColor:'gray'}}>
-                    <Text numberOfLines={1} allowFontScaling={false} style={{fontSize:wp(4)}}>Mês</Text>
-                    <Text numberOfLines={1} allowFontScaling={false} style={{fontSize:wp(5)}}>{valueGeneration.month.toFixed(2)}</Text>
-                    <Text numberOfLines={1} allowFontScaling={false} style={{fontSize:wp(3)}}>kwh</Text>
+             
+                <Animatable.View animation="slideInUp" style={{ flexDirection: 'row'}}>
+                    <View style={styles.row}>
+                    <Button title='Luz' ico={lamp} width={80} height={80} onPress={() => command(devices.escritorio+"/luz")} />
+                    </View>
+                    <View style={styles.row}>
+                    <Button title='pc' ico={pcgamer} width={80} height={80} onPress={() => command(devices.escritorio+"/pc")} />
+                    </View>
+                </Animatable.View>
+                
                 </View>
-                <View style={{flex:1, justifyContent:'center', alignItems:'center',padding:wp(1)}}>
-                    <Text numberOfLines={1} allowFontScaling={false} style={{fontSize:wp(4)}}>Acumulado</Text>
-                    <Text numberOfLines={1} allowFontScaling={false} style={{fontSize:wp(5)}}>{valueGeneration.cumulative.toFixed(2)}</Text>
-                    <Text numberOfLines={1} allowFontScaling={false} style={{fontSize:wp(3)}}>kwh</Text>
-                </View>
-            </View>
-            
-        </View>
-    )
-
+     
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: "100%",
+    height: '100%',
+    alignItems: 'center',
+    top:wp(5)
+},
+subHeader: {
+    width: "100%",
+    height: '37%',
+    backgroundColor: '#cdcdcd',
+    borderTopLeftRadius: 80,
+
+},
+image: {
+    width: "100%",
+    height: '100%',
+    borderTopLeftRadius: 80,
+    opacity: 0.5
+},
+
+titleDevices: {
+    top: '-2%',
+    left: '-31%',
+},
+containerButton: {
+    top: '-5%',
+    position: "relative",
+    width: '100%',
+    paddingTop: '7%',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgb(243,243,243)'
+
+},
+row: {
+    flex:1,
+    justifyContent: 'center',
+    alignItems: 'center',
+},
+
+})
