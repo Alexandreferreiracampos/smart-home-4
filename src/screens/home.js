@@ -26,7 +26,7 @@ export default function Home() {
     const navigation = useNavigation();
 
     const [valueGeneration, setGeneration] = useState({ "cumulative": 0, "month": 0, "today": 0 })
-    const [value, setValue] = useState({ fan: '', Bedroom: '', livingRoom: '', name: '', escritorio: '', cozinha: '', edicula: '', host: '', auth: '', foxx: '', sn: '' });
+    const [device, setDevice] = useState({ fan: '', Bedroom: '', livingRoom: '', name: '', escritorio: '', cozinha: '', edicula: '', host: '', auth: '', foxx: '', sn: '' });
     const [KWNow, setKWNow] = useState([]);
     const [circularProgress, setCircularProgress] = useState(0);
     const [statusInversor, setStatusInversor] = useState('red');
@@ -41,8 +41,8 @@ export default function Home() {
     const [awaitToken, setAwaitToken] = useState(false); 
 
     const url = 'https://www.foxesscloud.com';
-    const token = value.foxx;
-    const sn = value.sn;
+    const token = device.foxx;
+    const sn = device.sn;
     const parametersGeneration = '/op/v0/device/generation';
     const parametershistory = '/op/v0/device/report/query';
     const parameterReal = '/op/v0/device/real/query';
@@ -62,21 +62,21 @@ export default function Home() {
     useEffect(()=>{
         status();
         setAwaitToken(false);    
-    },[value])
+    },[device])
 
     
     const loadStorage=async()=>{
         const dataDevices = await AsyncStorage.getItem('@smartHome:device')
         if(dataDevices != null || ''){
             const objeto = JSON.parse(dataDevices || '');
-            setValue(objeto);
+            setDevice(objeto);
         }
  
     }
 
     const status = async ()=>{
 
-        const dataDevice = [value.livingRoom, value.cozinha, value.Bedroom, value.escritorio];
+        const dataDevice = [device.livingRoom, device.cozinha, device.Bedroom, device.escritorio];
         
         for(let i = 0; dataDevice.length > i; i++){
             verifiqueStatus(dataDevice[i], i);     
@@ -215,7 +215,7 @@ export default function Home() {
         }
     }
 
-    if( value.foxx != '' && awaitToken == false){
+    if( device.foxx != '' && awaitToken == false){
         setAwaitToken(true);
         KW()
     }
@@ -237,13 +237,13 @@ export default function Home() {
         req.send();
 
         switch (valor) {
-            case value.livingRoom + "/rele1":
+            case device.livingRoom + "/rele1":
                 setActiveTextLeds(!activeTextLeds)
                 break;
-            case value.livingRoom + "/?rele4":
+            case device.livingRoom + "/?rele4":
                 setActiveTextArandela(!activeTextArandela)
                 break;
-            case value.livingRoom + "?rele3":
+            case device.livingRoom + "?rele3":
                 setActiveTextGaragem(!activeTextGaragem)
                 break;
 
@@ -251,14 +251,14 @@ export default function Home() {
 
     }
 
-    const remoteDevice=(value, device, msg)=>{
+    const remoteDevice=(value, devices, msg)=>{
 
-        let url = value.host + device + '.json?auth='+ value.auth
+        let url = device.host + devices + '.json?auth='+ device.auth
         let req = new XMLHttpRequest();
         req.open('PUT', url)
         req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         req.send(JSON.stringify(value));
-
+     console.log(url)
         ToastAndroid.showWithGravityAndOffset(
             msg,
             ToastAndroid.LONG,
@@ -305,7 +305,7 @@ export default function Home() {
 
     const openGate = () => {
 
-        command(value.livingRoom + "/relea")
+        command(device.livingRoom + "/relea")
 
         ToastAndroid.showWithGravityAndOffset(
             "Acionando Portão",
@@ -331,7 +331,7 @@ export default function Home() {
             <ScrollView showsVerticalScrollIndicator={false} >
 
                 <View style={styles.header}>
-                    <Animatable.Text numberOfLines={1} allowFontScaling={false} animation="slideInLeft" style={styles.title}>Olá {value.name}!</Animatable.Text>
+                    <Animatable.Text numberOfLines={1} allowFontScaling={false} animation="slideInLeft" style={styles.title}>Olá {device.name}!</Animatable.Text>
                     <Animatable.Text numberOfLines={1} allowFontScaling={false} animation="slideInRight" onPress={() => navigatioScreen('Config')}>
                         <Entypo  name={'add-to-list'} size={wp(8)} color={'white'} />
                     </Animatable.Text>
@@ -376,13 +376,13 @@ export default function Home() {
 
                 <View style={{width:'100%',flexDirection:'row', top:-wp(5)}}>
                     <View style={styles.row}>
-                    <Button title='Sala' status={statusSala} ico={BTLivingRoom} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('LivingRoom')} onLongPress={() => command(value.livingRoom+"/?rele6")} />
-                    <Button title='Edícula' status={statusSala} ico={churrasco} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('PratyArea')} onLongPress={() => command(value.edicula+"/relee")}/>
-                    <Button title='Escritório' status={statusEscritorio} ico={escritorio} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('GamerRoom')} onLongPress={() => command(value.escritorio+"/pc")}/>
+                    <Button title='Sala' status={statusSala} ico={BTLivingRoom} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('LivingRoom')} onLongPress={() => command(device.livingRoom+"/?rele6")} />
+                    <Button title='Edícula' status={statusSala} ico={churrasco} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('PratyArea')} onLongPress={() => command(device.edicula+"/relee")}/>
+                    <Button title='Escritório' status={statusEscritorio} ico={escritorio} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('GamerRoom')} onLongPress={() => command(device.escritorio+"/pc")}/>
                     </View>
                     <View style={styles.row}>
-                    <Button title='Cozinha' status={statusCozinha} ico={cozinha} width={wp(20)} height={wp(20)} onPress={() => command(value.cozinha + "/Controle?Rele1=on")}/>
-                    <Button title='Quarto' status={statusQuarto} ico={BTBedroom1} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('Bedroom')} onLongPress={() => command(value.Bedroom+"/rele4")}/>
+                    <Button title='Cozinha' status={statusCozinha} ico={cozinha} width={wp(20)} height={wp(20)} onPress={() => command(device.cozinha + "/Controle?Rele1=on")}/>
+                    <Button title='Quarto' status={statusQuarto} ico={BTBedroom1} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('Bedroom')} onLongPress={() => command(device.Bedroom+"/rele4")}/>
                     <Button title='Placa Solar' status={statusInversor} ico={Pv} width={wp(20)} height={wp(20)} onPress={() => navigatioScreen('History')}/>
                     </View>
 
@@ -393,9 +393,9 @@ export default function Home() {
                 <TouchableOpacity onPress={() => biometric()} onLongPress={()=> biometricOnLong()} style={{ width: wp(22), height: wp(22), top:wp(-2), borderRadius: 75, backgroundColor:'rgb(47,93,180)', justifyContent: 'center',alignItems: 'center' }}>
                    <Image source={require('../assets/gate.png')} style={{width:'65%', height:'65%'}}/>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => command(value.livingRoom + "?rele3")} onLongPress={()=> remoteDevice("true", "Luzgaragem", "Luz Garagem Acionado Remotamente")}><Text numberOfLines={1} allowFontScaling={false}  style={[styles.titleButton, activeTextGaragem && styles.titleButtonActive]}>Garagem</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => command(value.livingRoom + "/?rele4")} onLongPress={()=> remoteDevice("true", "arandelas", "Arandelas Acionado Remotamente")} ><Text numberOfLines={1} allowFontScaling={false}  style={[styles.titleButton, activeTextArandela && styles.titleButtonActive]}>Arandelas</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => command(value.livingRoom + "/rele1")} onLongPress={()=> remoteDevice("true", "leds", "Led Acionado Remotamente")} ><Text numberOfLines={1} allowFontScaling={false}  style={[styles.titleButton, activeTextLeds && styles.titleButtonActive]}>Leds</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => command(device.livingRoom + "?rele3")} onLongPress={()=> remoteDevice("true", "Luzgaragem", "Luz Garagem Acionado Remotamente")}><Text numberOfLines={1} allowFontScaling={false}  style={[styles.titleButton, activeTextGaragem && styles.titleButtonActive]}>Garagem</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => command(device.livingRoom + "/?rele4")} onLongPress={()=> remoteDevice("true", "arandelas", "Arandelas Acionado Remotamente")} ><Text numberOfLines={1} allowFontScaling={false}  style={[styles.titleButton, activeTextArandela && styles.titleButtonActive]}>Arandelas</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => command(device.livingRoom + "/rele1")} onLongPress={()=> remoteDevice("true", "leds", "Led Acionado Remotamente")} ><Text numberOfLines={1} allowFontScaling={false}  style={[styles.titleButton, activeTextLeds && styles.titleButtonActive]}>Leds</Text></TouchableOpacity>
             </View>
         </SafeAreaView>
     )
